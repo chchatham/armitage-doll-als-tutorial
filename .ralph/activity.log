@@ -1,0 +1,22 @@
+# Activity Log
+# Append iteration summaries here.
+
+## Iteration 0 — Initial Setup
+- Created ralph state files for Armitage-Doll ALS tutorial project
+- Defined 5 phases with 24 checkboxes across math engine, 4 tutorial sections, and deployment
+- Established domain-specific guardrails for scientific accuracy and accessibility
+- Status: ready for first implementation session (Phase 1: scaffold + math engine)
+
+## Iteration 1 — 2026-05-15 — Full Build (Phases 1–4 + most of Phase 5)
+- Scaffolded Vite + React + TypeScript project (workaround: scaffold in /tmp, copy in)
+- Installed all deps: D3 v7, mathjs, vitest, playwright, gh-pages, type definitions
+- Built 5 math modules: power-law, weibull, erlang, exponential, fitting (with AIC/BIC)
+- Wrote 32 unit tests — all pass. Tests verify against hand-calculated reference values.
+- Built 3 reusable components: PlotCanvas (D3 SVG), Slider, ResetButton
+- Built all 4 tutorial sections with full prose and 7 interactive widgets
+- Created synthetic ALS dataset with clear labelling + study citations
+- Created global CSS with variables, typography, responsive breakpoints
+- Fixed: vitest config must be separate file (tsc -b type error); test files excluded from app tsconfig
+- Discovered 3 new guardrails (vitest config separation, Vite non-empty dir, template cleanup)
+- Checked off 22 of 28 task items. 6 remain: Playwright tests, a11y polish, Lighthouse, deployment, e2e smoke, science review.
+- Status: all content built and building cleanly. Next session: polish + test + deploy.

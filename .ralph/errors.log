@@ -1,0 +1,4 @@
+# Errors Log
+# Append failures here. Pattern: timestamp | module | error | resolution
+# When the same error appears 3+ times, it becomes a guardrail sign.
+
