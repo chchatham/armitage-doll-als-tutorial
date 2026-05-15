@@ -7,27 +7,29 @@ import { weibullPDF } from '../math/weibull';
 import { erlangPDF } from '../math/erlang';
 
 const WIDGET1_DEFAULTS = { k: 6 };
-const WIDGET2_DEFAULTS = { weibullK: 3, weibullLambda: 65, erlangK: 3, erlangMu: 0.05 };
+const WIDGET2_DEFAULTS = { weibullK: 2, weibullLambda: 60, erlangK: 3, erlangMu: 0.05 };
 
 function Widget1_MultistageBuilder() {
   const [k, setK] = useState(WIDGET1_DEFAULTS.k);
 
   const series = useMemo<Series[]>(() => {
-    const logData: [number, number][] = [];
+    const data: [number, number][] = [];
     for (let age = 5; age <= 90; age += 1) {
       const y = incidence(age, k, 1e-10);
-      if (y > 0) logData.push([age, y]);
+      if (y > 0) data.push([age, y]);
     }
-    return [{ label: `k = ${k} (slope = ${logLogSlope(k)})`, data: logData, color: '#0f3460' }];
+    return [{ label: `k = ${k} (slope = ${logLogSlope(k)})`, data, color: '#0f3460' }];
   }, [k]);
 
   return (
     <div id="widget-multistage-builder" role="group" aria-labelledby="w1-heading">
       <h4 id="w1-heading">Widget 1: Build a Multistage Process</h4>
       <p>
-        Adjust the number of stages <em>k</em>. On a log-log plot, the
+        Adjust the number of stages <em>k</em>. On the log-log plot (left), the
         Armitage-Doll incidence curve I(t) = c &middot; t<sup>k&minus;1</sup>{' '}
         appears as a straight line with slope <strong>k &minus; 1 = {logLogSlope(k)}</strong>.
+        The linear plot (right) shows the same curve on a natural scale&mdash;notice
+        how the power-law concentrates nearly all its growth at older ages.
       </p>
       <Slider
         id="w1-k"
@@ -39,15 +41,28 @@ function Widget1_MultistageBuilder() {
         onChange={setK}
       />
       <ResetButton onClick={() => setK(WIDGET1_DEFAULTS.k)} />
-      <PlotCanvas
-        id="plot-multistage"
-        series={series}
-        xLabel="Age (log scale)"
-        yLabel="Incidence (log scale)"
-        logX
-        logY
-        ariaDescription={`Log-log plot of age versus incidence for a ${k}-stage Armitage-Doll model. The line has slope ${logLogSlope(k)}.`}
-      />
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 0', minWidth: '280px' }}>
+          <PlotCanvas
+            id="plot-multistage-loglog"
+            series={series}
+            xLabel="Age (log scale)"
+            yLabel="Incidence (log scale)"
+            logX
+            logY
+            ariaDescription={`Log-log plot of age versus incidence for a ${k}-stage Armitage-Doll model. The line has slope ${logLogSlope(k)}.`}
+          />
+        </div>
+        <div style={{ flex: '1 1 0', minWidth: '280px' }}>
+          <PlotCanvas
+            id="plot-multistage-linear"
+            series={series}
+            xLabel="Age"
+            yLabel="Incidence"
+            ariaDescription={`Linear plot of age versus incidence for a ${k}-stage Armitage-Doll model, showing the steep power-law rise at older ages.`}
+          />
+        </div>
+      </div>
     </div>
   );
 }

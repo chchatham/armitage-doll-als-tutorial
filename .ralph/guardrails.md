@@ -89,3 +89,39 @@
   originals may linger. Delete them during polish to avoid confusion. Also check
   `index.html` for template title text.
 - added after: iteration 1 (template files left behind after scaffold)
+
+### Sign: widget defaults must visibly demonstrate the text's claim
+- trigger: setting default parameters for any interactive widget
+- instruction: compute the actual output values at default parameters before
+  committing. Verify that the plot VISUALLY shows what the prose says it shows.
+  Common failures: (1) curves on different vertical scales so they never overlap,
+  (2) decay rates too small to overcome power-law growth so "decline" curves keep
+  rising, (3) carrier incidence lower than general population when text says
+  "earlier onset," (4) onset age unrealistically young/old for the disease context.
+  Run a quick Node script to print values at key ages and check by hand.
+- added after: iteration 2 (5 of 7 widgets had defaults that contradicted their text)
+
+### Sign: exponential accumulation ≠ exponential growth
+- trigger: comparing a power-law model to an "exponential" alternative
+- instruction: 1-exp(-rt) is a saturating function that CANNOT match a power law
+  t^(k-1) over any age range when k≥3. For the curve-fitting trap comparison,
+  use exponential growth exp(bt) instead. For peaked incidence data, use a
+  turnover model c·t^(k-1)·exp(-βt), not accumulation. The literature comparison
+  is growth vs power-law, not accumulation vs power-law.
+- added after: iteration 2 (Widget 3 had 5 orders of magnitude mismatch, Widget 5
+  used a monotonic model for peaked data)
+
+### Sign: exclude e2e directory from vitest
+- trigger: adding Playwright e2e tests alongside vitest unit tests
+- instruction: add `exclude: ['e2e/**', 'node_modules/**']` to vitest.config.ts.
+  Without this, vitest picks up Playwright spec files and reports them as failures
+  because they import from `@playwright/test`, not vitest.
+- added after: iteration 2 (vitest reported 2 "failed" test files that were e2e specs)
+
+### Sign: text color contrast differs from chart line contrast requirements
+- trigger: using the same color for both chart lines (SVG stroke) and inline text
+- instruction: WCAG requires 4.5:1 for normal text but only 3:1 for graphical
+  elements. A color like #e94560 passes for chart lines on white (3.66:1 > 3:1)
+  but fails for text on #fafafa. Use a darker variant for text (e.g., #b91c1c)
+  while keeping the brighter color for chart lines. Run axe-core to catch these.
+- added after: iteration 2 (axe flagged #e94560 text at 3.66:1 on #fafafa)

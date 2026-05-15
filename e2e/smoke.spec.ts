@@ -39,7 +39,8 @@ test.describe('Tutorial smoke tests', () => {
 
   test('all SVG plots render', async ({ page }) => {
     const plots = [
-      '#plot-multistage',
+      '#plot-multistage-loglog',
+      '#plot-multistage-linear',
       '#plot-distributions',
       '#plot-curve-trap',
       '#plot-old-age',
@@ -59,7 +60,7 @@ test.describe('Tutorial smoke tests', () => {
   test('Widget 1 slider changes plot', async ({ page }) => {
     const slider = page.locator('#w1-k');
     await expect(slider).toBeVisible();
-    const svg = page.locator('#plot-multistage');
+    const svg = page.locator('#plot-multistage-loglog');
     const pathsBefore = await svg.locator('path').count();
     await slider.fill('3');
     await page.waitForTimeout(200);

@@ -4,48 +4,67 @@ import Slider from '../components/Slider';
 import ResetButton from '../components/ResetButton';
 import { incidence } from '../math/power-law';
 
+const AGE_MIN = 30;
+const AGE_MAX = 75;
 const REF_AGE = 55;
-const W3_DEFAULTS = { k: 6, expRate: 0.09, scaleFactor: 1.0 };
+const W3_DEFAULTS = { k: 6 };
 const W4_DEFAULTS = { peakAge: 75, betaStrength: 0.07, susceptibleFraction: 0.4 };
 
-function Widget3_CurveFittingTrap() {
-  const [params, setParams] = useState(W3_DEFAULTS);
-  const update = (key: keyof typeof W3_DEFAULTS, v: number) =>
-    setParams((p) => ({ ...p, [key]: v }));
+function fitExpRate(k: number): number {
+  let bestR = 0.01, bestErr = Infinity;
+  for (let r = 0.01; r <= 0.30; r += 0.0005) {
+    let err = 0;
+    for (let age = AGE_MIN; age <= AGE_MAX; age++) {
+      const pw = Math.pow(age / REF_AGE, k - 1);
+      const ex = Math.exp(r * (age - REF_AGE));
+      const diff = pw - ex;
+      err += diff * diff;
+    }
+    if (err < bestErr) { bestErr = err; bestR = r; }
+  }
+  return Math.round(bestR * 10000) / 10000;
+}
 
-  const series = useMemo<Series[]>(() => {
+function Widget3_CurveFittingTrap() {
+  const [k, setK] = useState(W3_DEFAULTS.k);
+
+  const { series, fittedRate } = useMemo(() => {
+    const rate = fitExpRate(k);
+    const scale = 10;
     const powerData: [number, number][] = [];
     const expData: [number, number][] = [];
-    const scale = 10 * params.scaleFactor;
-    for (let age = 20; age <= 80; age += 1) {
-      powerData.push([age, scale * Math.pow(age / REF_AGE, params.k - 1)]);
-      expData.push([age, scale * Math.exp(params.expRate * (age - REF_AGE))]);
+    for (let age = AGE_MIN; age <= AGE_MAX; age += 1) {
+      powerData.push([age, scale * Math.pow(age / REF_AGE, k - 1)]);
+      expData.push([age, scale * Math.exp(rate * (age - REF_AGE))]);
     }
-    return [
-      { label: `Power-law (k=${params.k})`, data: powerData, color: '#0f3460' },
-      { label: `Exponential (rate=${params.expRate})`, data: expData, color: '#e94560', dash: '6,4' },
-    ];
-  }, [params]);
+    return {
+      series: [
+        { label: `Power-law (k=${k})`, data: powerData, color: '#0f3460' },
+        { label: `Exponential (r=${rate.toFixed(3)})`, data: expData, color: '#e94560', dash: '6,4' },
+      ] as Series[],
+      fittedRate: rate,
+    };
+  }, [k]);
 
   return (
     <div id="widget-curve-fitting-trap" role="group" aria-labelledby="w3-heading">
       <h4 id="w3-heading">Widget 3: The Curve-Fitting Trap</h4>
       <p>
         Two biologically different models&mdash;a discrete multistage process and a continuous
-        exponential growth model&mdash;can produce nearly identical curves over working ages. Both
-        are normalised to the same value at age {REF_AGE}. Adjust the parameters to see how closely
-        they overlap, demonstrating that a good fit does <em>not</em> prove the underlying mechanism.
+        exponential growth model&mdash;can produce nearly identical curves over working ages
+        ({AGE_MIN}&ndash;{AGE_MAX}). The exponential rate is automatically fitted to match the
+        power law as closely as possible (r&nbsp;=&nbsp;{fittedRate.toFixed(3)}). Despite their
+        near-perfect overlap, these models encode completely different biological mechanisms&mdash;a
+        good fit does <em>not</em> prove the underlying process.
       </p>
-      <Slider id="w3-k" label="Power-law stages (k)" min={2} max={10} step={1} value={params.k} onChange={(v) => update('k', v)} />
-      <Slider id="w3-rate" label="Exponential rate" min={0.05} max={0.15} step={0.005} value={params.expRate} onChange={(v) => update('expRate', v)} />
-      <Slider id="w3-scale" label="Shared scale" min={0.5} max={3} step={0.1} value={params.scaleFactor} onChange={(v) => update('scaleFactor', v)} formatValue={(v) => v.toFixed(1)} />
-      <ResetButton onClick={() => setParams(W3_DEFAULTS)} />
+      <Slider id="w3-k" label="Power-law stages (k)" min={2} max={10} step={1} value={k} onChange={setK} />
+      <ResetButton onClick={() => setK(W3_DEFAULTS.k)} />
       <PlotCanvas
         id="plot-curve-trap"
         series={series}
         xLabel="Age"
         yLabel="Incidence (arbitrary units)"
-        ariaDescription="Two curves — a power-law and an exponential — that look nearly identical over working ages, illustrating how fit quality cannot determine mechanism."
+        ariaDescription={`Two nearly overlapping curves over ages ${AGE_MIN} to ${AGE_MAX}: a ${k}-stage power-law and an exponential with rate ${fittedRate.toFixed(3)}, illustrating how fit quality cannot determine mechanism.`}
       />
     </div>
   );
