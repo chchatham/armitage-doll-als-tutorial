@@ -144,7 +144,7 @@ export default function S1_Fundamentals() {
       <h3>Key Assumptions</h3>
       <ol>
         <li><strong>Discrete stages:</strong> Disease requires exactly <em>k</em> sequential transitions.</li>
-        <li><strong>Fixed order:</strong> Transitions must occur in a specific sequence (stage 1 before stage 2, etc.).</li>
+        <li><strong>Sequential progression:</strong> A cell passes through abstract stages in sequence (stage 0 &rarr; stage 1 &rarr; &hellip; &rarr; stage <em>k</em>), though the biological identity of each transition is not specified.</li>
         <li><strong>Independence:</strong> Each transition occurs at a constant rate, independent of when previous transitions occurred.</li>
         <li><strong>Universal susceptibility:</strong> Every individual in the population is equally susceptible&mdash;there is no heterogeneity in intrinsic risk.</li>
       </ol>
@@ -169,8 +169,9 @@ export default function S1_Fundamentals() {
         The time to complete all <em>k</em> stages can be described by standard probability distributions.
         When every stage has the same rate, the total waiting time follows an{' '}
         <strong>Erlang distribution</strong> (the sum of <em>k</em> independent exponentials).
-        The more flexible <strong>Weibull distribution</strong> generalises this by allowing the shape
-        parameter to be non-integer, which accommodates scenarios where transition rates vary between stages.
+        The <strong>Weibull distribution</strong> is a separate family that shares the power-law hazard
+        structure and allows non-integer shape parameters. It is not a formal generalisation of the
+        Erlang, but it is often used as a flexible alternative when integer-step assumptions are relaxed.
       </p>
 
       <Widget2_DistributionComparison />

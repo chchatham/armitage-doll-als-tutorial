@@ -148,14 +148,18 @@ export default function S3_ALS() {
       <h3>The Six-Step Interpretation</h3>
       <p>
         When the Armitage-Doll model was first applied to ALS (amyotrophic lateral sclerosis), the
-        age-incidence curve appeared to follow a power law with slope approximately 5, suggesting a
-        6-step process (Al-Chalabi et al., 2014). This was an intriguing parallel to cancer: perhaps
-        motor neuron degeneration, like carcinogenesis, required a specific number of &ldquo;hits.&rdquo;
+        age-incidence curve appeared to follow a power law with a log-log slope consistent with
+        approximately 6 steps, though fitted values vary by population (Al-Chalabi et al., 2014).
+        This was an intriguing parallel to cancer: perhaps motor neuron degeneration, like
+        carcinogenesis, required a specific number of &ldquo;hits.&rdquo;
       </p>
       <p>
-        Under this interpretation, individuals with known ALS-causing mutations (such as SOD1 or
+        Under this interpretation, individuals with known ALS-associated mutations (such as SOD1 or
         C9orf72 repeat expansions) would &ldquo;start&rdquo; with one or more steps already completed,
-        explaining their earlier disease onset and steeper incidence rise.
+        explaining their earlier disease onset and <em>shallower</em> log-log slope (fewer remaining
+        steps). Note that this &ldquo;pre-completed steps&rdquo; framing is an analogy within the
+        multistage model; the actual biological mechanisms (e.g., SOD1 toxic gain-of-function) are
+        distinct from the abstract stages the model posits.
       </p>
 
       <Widget6_StepsToSlopes />

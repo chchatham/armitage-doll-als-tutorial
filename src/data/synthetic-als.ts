@@ -1,6 +1,7 @@
 // SYNTHETIC DATA — not real epidemiological measurements.
-// Shape inspired by published ALS age-incidence patterns (peak ~70, decline after ~80)
-// but all values are stylised for pedagogical purposes.
+// Shape inspired by published ALS age-incidence patterns (peak ~70-75, decline after ~80)
+// but values are exaggerated (~3x real peak rates) for visual clarity.
+// Real ALS incidence peaks at roughly 6-8 per 100k person-years.
 // References for real data: Logroscino et al. 2010, Chiò et al. 2013.
 
 export const syntheticALSIncidence: [number, number][] = [
@@ -21,4 +22,4 @@ export const syntheticALSIncidence: [number, number][] = [
 
 // Per 100,000 person-years. Clearly labelled as SYNTHETIC.
 export const SYNTHETIC_LABEL =
-  'Synthetic ALS-like incidence (per 100k person-years). Not real data — shape mimics published patterns.';
+  'Synthetic ALS-like incidence (per 100k person-years). Not real data — shape mimics published patterns; absolute values are exaggerated for visual clarity (real peak ≈ 6–8/100k).';

@@ -143,12 +143,13 @@ export default function S2_Limitations() {
 
       <h3>Relaxing the Assumptions</h3>
       <p>
-        More fundamentally, the model&rsquo;s core assumptions&mdash;fixed order, independence, universal
-        susceptibility&mdash;are biologically unrealistic for many diseases. Mutations can occur in any
-        order (not just one fixed sequence), some individuals may be more susceptible than others
-        (due to genetics, environment, or both), and the rate of each transition may depend on which
-        transitions have already occurred. These complications don&rsquo;t invalidate the multistage
-        idea entirely, but they mean the simple power-law prediction is at best an approximation.
+        More fundamentally, the model&rsquo;s core assumptions&mdash;sequential progression, independence,
+        universal susceptibility&mdash;are biologically unrealistic for many diseases. Real cellular
+        transitions may not follow a single linear pathway, some individuals may be more susceptible
+        than others (due to genetics, environment, or both), and the rate of each transition may
+        depend on which transitions have already occurred. These complications don&rsquo;t invalidate
+        the multistage idea entirely, but they mean the simple power-law prediction is at best an
+        approximation.
       </p>
     </section>
   );
