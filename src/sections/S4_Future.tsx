@@ -4,10 +4,10 @@ import Slider from '../components/Slider';
 import ResetButton from '../components/ResetButton';
 
 const W7_DEFAULTS = {
-  geneticLoad: 0.3,
-  envExposure: 0.2,
+  geneticLoad: 0.05,
+  envExposure: 0.1,
   agingRate: 0.015,
-  threshold: 0.7,
+  threshold: 0.8,
 };
 
 function Widget7_ResilienceThreshold() {

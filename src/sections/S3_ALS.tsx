@@ -3,10 +3,10 @@ import PlotCanvas, { type Series } from '../components/PlotCanvas';
 import Slider from '../components/Slider';
 import ResetButton from '../components/ResetButton';
 import { incidence } from '../math/power-law';
-import { fitPowerLaw, fitExponential, type FitResult } from '../math/fitting';
+import { fitPowerLaw, fitTurnover, type FitResult } from '../math/fitting';
 import { syntheticALSIncidence, SYNTHETIC_LABEL } from '../data/synthetic-als';
 
-const W5_DEFAULTS = { showPowerLaw: true, showExponential: true };
+const W5_DEFAULTS = { showPowerLaw: true, showTurnover: true };
 const W6_DEFAULTS = { k: 6, carrierK: 3 };
 
 function FitStats({ label, fit }: { label: string; fit: FitResult }) {
@@ -14,7 +14,7 @@ function FitStats({ label, fit }: { label: string; fit: FitResult }) {
     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
       <strong>{label}:</strong> AIC = {fit.aic.toFixed(1)}, BIC = {fit.bic.toFixed(1)}
       {fit.model === 'power-law' && <span> (k = {fit.params.k.toFixed(2)})</span>}
-      {fit.model === 'exponential' && <span> (rate = {fit.params.rate.toFixed(4)}, scale = {fit.params.scale.toFixed(1)})</span>}
+      {fit.model === 'turnover' && <span> (k = {fit.params.k.toFixed(1)}, &beta; = {fit.params.beta.toFixed(4)}, peak age &asymp; {((fit.params.k - 1) / fit.params.beta).toFixed(0)})</span>}
     </div>
   );
 }
@@ -23,7 +23,7 @@ function Widget5_FitOff() {
   const [show, setShow] = useState(W5_DEFAULTS);
 
   const plFit = useMemo(() => fitPowerLaw(syntheticALSIncidence), []);
-  const expFit = useMemo(() => fitExponential(syntheticALSIncidence), []);
+  const toFit = useMemo(() => fitTurnover(syntheticALSIncidence), []);
 
   const series = useMemo<Series[]>(() => {
     const result: Series[] = [
@@ -38,18 +38,18 @@ function Widget5_FitOff() {
       result.push({ label: 'Power-law fit', data: plCurve, color: '#0f3460', dash: '6,4' });
     }
 
-    if (show.showExponential) {
-      const expCurve: [number, number][] = [];
+    if (show.showTurnover) {
+      const toCurve: [number, number][] = [];
       for (let t = 30; t <= 90; t += 1) {
-        expCurve.push([t, expFit.params.scale * (1 - Math.exp(-expFit.params.rate * t))]);
+        toCurve.push([t, toFit.params.c * Math.pow(t, toFit.params.k - 1) * Math.exp(-toFit.params.beta * t)]);
       }
-      result.push({ label: 'Exponential fit', data: expCurve, color: '#e94560', dash: '8,3' });
+      result.push({ label: 'Turnover fit', data: toCurve, color: '#e94560', dash: '8,3' });
     }
 
     return result;
-  }, [show, plFit, expFit]);
+  }, [show, plFit, toFit]);
 
-  const winner = expFit.aic < plFit.aic ? 'exponential' : 'power-law';
+  const winner = toFit.aic < plFit.aic ? 'turnover' : 'power-law';
 
   return (
     <div id="widget-fit-off" role="group" aria-labelledby="w5-heading">
@@ -58,8 +58,9 @@ function Widget5_FitOff() {
         <em>{SYNTHETIC_LABEL}</em>
       </p>
       <p>
-        Fit both a power-law and an exponential model to the data. The model with the lower AIC/BIC
-        is preferred. Toggle each fit on or off to compare visually.
+        Compare a pure power-law model (which rises forever) against a turnover model that adds
+        competing mortality: I(t) = c &middot; t<sup>k&minus;1</sup> &middot; e<sup>&minus;&beta;t</sup>.
+        The model with the lower AIC is preferred. Toggle each fit to compare visually.
       </p>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem' }}>
         <label>
@@ -73,16 +74,16 @@ function Widget5_FitOff() {
         <label>
           <input
             type="checkbox"
-            checked={show.showExponential}
-            onChange={(e) => setShow((s) => ({ ...s, showExponential: e.target.checked }))}
+            checked={show.showTurnover}
+            onChange={(e) => setShow((s) => ({ ...s, showTurnover: e.target.checked }))}
           />{' '}
-          Show exponential fit
+          Show turnover fit
         </label>
       </div>
       <FitStats label="Power-law" fit={plFit} />
-      <FitStats label="Exponential" fit={expFit} />
+      <FitStats label="Turnover" fit={toFit} />
       <p style={{ fontWeight: 600 }}>
-        Preferred model (lower AIC): <span style={{ color: winner === 'exponential' ? '#b91c1c' : '#0f3460' }}>{winner}</span>
+        Preferred model (lower AIC): <span style={{ color: winner === 'turnover' ? '#b91c1c' : '#0f3460' }}>{winner}</span>
       </p>
       <ResetButton onClick={() => setShow(W5_DEFAULTS)} />
       <PlotCanvas
@@ -90,7 +91,7 @@ function Widget5_FitOff() {
         series={series}
         xLabel="Age"
         yLabel="Incidence (per 100k)"
-        ariaDescription={`Synthetic ALS incidence data points with overlaid power-law and exponential fits. The ${winner} model has the lower AIC.`}
+        ariaDescription={`Synthetic ALS incidence data with overlaid power-law and turnover fits. The ${winner} model has the lower AIC, capturing the peak and decline in incidence.`}
       />
     </div>
   );
@@ -105,7 +106,7 @@ function Widget6_StepsToSlopes() {
     const carriers: [number, number][] = [];
     for (let age = 5; age <= 90; age += 1) {
       const gVal = incidence(age, params.k, c);
-      const cVal = incidence(age, params.carrierK, c * 1e4);
+      const cVal = incidence(age, params.carrierK, c * 2e5);
       if (gVal > 0) generalPop.push([age, gVal]);
       if (cVal > 0) carriers.push([age, cVal]);
     }
@@ -164,19 +165,22 @@ export default function S3_ALS() {
 
       <Widget6_StepsToSlopes />
 
-      <h3>The Exponential Challenge</h3>
+      <h3>Beyond the Pure Power Law</h3>
       <p>
         However, more careful analysis reveals that the ALS age-incidence curve is not truly a
-        power law. When you fit both a power-law and an exponential model, the exponential model
-        provides a better fit (lower AIC/BIC), particularly because it naturally accommodates the
-        incidence decline after the peak age&mdash;something the pure power law cannot.
+        power law. When you fit both a pure power-law model and a turnover model (the multistage
+        process modified by competing mortality: I(t) = c &middot; t<sup>k&minus;1</sup> &middot;
+        e<sup>&minus;&beta;t</sup>), the turnover model provides a substantially better fit (lower
+        AIC/BIC), because it captures the observed incidence decline after peak age&mdash;something
+        the pure power law cannot.
       </p>
       <p>
-        This is a critical finding: if the data is better described by an exponential process, then
-        the multistage &ldquo;counting steps&rdquo; framework is not the right model for ALS.
-        Instead, ALS may arise from continuous, cumulative damage where risk reflects the total
-        burden of genetic susceptibility and environmental exposure over a lifetime, rather than a
-        discrete sequence of mutations.
+        This is a critical finding: the data requires a turnover component, meaning the simple
+        &ldquo;counting steps&rdquo; framework is incomplete for ALS. The incidence peak and decline
+        suggest that cumulative damage, competing mortality, and susceptibility depletion all play
+        roles&mdash;pointing toward a framework where risk reflects the total burden of genetic
+        susceptibility and environmental exposure over a lifetime, rather than a discrete sequence of
+        mutations alone.
       </p>
 
       <Widget5_FitOff />

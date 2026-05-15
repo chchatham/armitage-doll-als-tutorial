@@ -76,9 +76,9 @@ function Widget2_DistributionComparison() {
     <div id="widget-distribution-comparison" role="group" aria-labelledby="w2-heading">
       <h4 id="w2-heading">Widget 2: Compare Distributions</h4>
       <p>
-        The Weibull distribution generalises the multistage model&rsquo;s waiting-time to allow non-integer
-        shape parameters, while the Erlang distribution is the exact sum of <em>k</em> independent
-        exponential stages. Compare how their shapes respond to parameter changes.
+        The Weibull distribution is a separate family that shares the power-law hazard structure but
+        allows non-integer shape parameters. The Erlang distribution is the exact sum of <em>k</em>{' '}
+        independent exponential stages. Compare how their shapes respond to parameter changes.
       </p>
       <Slider
         id="w2-weibull-k"

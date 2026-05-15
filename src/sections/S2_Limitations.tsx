@@ -3,10 +3,10 @@ import PlotCanvas, { type Series } from '../components/PlotCanvas';
 import Slider from '../components/Slider';
 import ResetButton from '../components/ResetButton';
 import { incidence } from '../math/power-law';
-import { exponentialAccumulation } from '../math/exponential';
 
-const W3_DEFAULTS = { k: 6, expRate: 0.055, scaleFactor: 1.0 };
-const W4_DEFAULTS = { peakAge: 75, betaStrength: 0.03, susceptibleFraction: 0.4 };
+const REF_AGE = 55;
+const W3_DEFAULTS = { k: 6, expRate: 0.09, scaleFactor: 1.0 };
+const W4_DEFAULTS = { peakAge: 75, betaStrength: 0.07, susceptibleFraction: 0.4 };
 
 function Widget3_CurveFittingTrap() {
   const [params, setParams] = useState(W3_DEFAULTS);
@@ -16,10 +16,10 @@ function Widget3_CurveFittingTrap() {
   const series = useMemo<Series[]>(() => {
     const powerData: [number, number][] = [];
     const expData: [number, number][] = [];
-    const c = 1e-10 * params.scaleFactor;
+    const scale = 10 * params.scaleFactor;
     for (let age = 20; age <= 80; age += 1) {
-      powerData.push([age, incidence(age, params.k, c)]);
-      expData.push([age, 25 * exponentialAccumulation(age, params.expRate)]);
+      powerData.push([age, scale * Math.pow(age / REF_AGE, params.k - 1)]);
+      expData.push([age, scale * Math.exp(params.expRate * (age - REF_AGE))]);
     }
     return [
       { label: `Power-law (k=${params.k})`, data: powerData, color: '#0f3460' },
@@ -31,14 +31,14 @@ function Widget3_CurveFittingTrap() {
     <div id="widget-curve-fitting-trap" role="group" aria-labelledby="w3-heading">
       <h4 id="w3-heading">Widget 3: The Curve-Fitting Trap</h4>
       <p>
-        Two biologically different models&mdash;a discrete 6-stage process and a continuous exponential
-        accumulation&mdash;can produce nearly identical curves over the ages 20&ndash;80. Adjust the
-        parameters to see how closely they overlap, demonstrating that a good fit does <em>not</em>{' '}
-        prove the underlying mechanism.
+        Two biologically different models&mdash;a discrete multistage process and a continuous
+        exponential growth model&mdash;can produce nearly identical curves over working ages. Both
+        are normalised to the same value at age {REF_AGE}. Adjust the parameters to see how closely
+        they overlap, demonstrating that a good fit does <em>not</em> prove the underlying mechanism.
       </p>
       <Slider id="w3-k" label="Power-law stages (k)" min={2} max={10} step={1} value={params.k} onChange={(v) => update('k', v)} />
-      <Slider id="w3-rate" label="Exponential rate" min={0.01} max={0.15} step={0.005} value={params.expRate} onChange={(v) => update('expRate', v)} />
-      <Slider id="w3-scale" label="Power-law scale" min={0.1} max={5} step={0.1} value={params.scaleFactor} onChange={(v) => update('scaleFactor', v)} formatValue={(v) => v.toFixed(1)} />
+      <Slider id="w3-rate" label="Exponential rate" min={0.05} max={0.15} step={0.005} value={params.expRate} onChange={(v) => update('expRate', v)} />
+      <Slider id="w3-scale" label="Shared scale" min={0.5} max={3} step={0.1} value={params.scaleFactor} onChange={(v) => update('scaleFactor', v)} formatValue={(v) => v.toFixed(1)} />
       <ResetButton onClick={() => setParams(W3_DEFAULTS)} />
       <PlotCanvas
         id="plot-curve-trap"
@@ -73,7 +73,7 @@ function Widget4_OldAgePlateau() {
 
       const susceptible = params.susceptibleFraction;
       const depletion = age > params.peakAge
-        ? susceptible * Math.exp(-0.05 * (age - params.peakAge))
+        ? susceptible * Math.exp(-0.08 * (age - params.peakAge))
         : susceptible;
       susceptModel.push([age, raw * depletion]);
     }
